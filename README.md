@@ -195,7 +195,7 @@ export default App
   - HomeCards // Wrapper component for Card
   - Card
   - JobListings // Wrapper component for Listing
-  - Listing
+  - JobListing
  
 ```jsx
 //app.jsx
@@ -204,6 +204,7 @@ export default App
     <Hero />
     <HomeCards />
     <JobListings />
+    <ViewAllJobs /> // href="/jobs"
 <>
 
 ```
@@ -263,6 +264,55 @@ const Card = ({children, bg = 'bg-gray-100'})=>{
 [{},{}]
 
 - Create a wrapper JobListings component and in this import the jobs json
-- 
+- console ninja extension vscode
+  
+```js
+return (
+    <section>
+        ...html
+        {jobs.map((job)=>(
+            <JobListing key={job.id} job = {job}/>  
+        ))}
+    </section>
+)
+
+const JobListing=({job})=>{
+    return(
+        ...html // single parent
+        {job.type}
+        <a href={`/job/${job.id}`}>  
+    )
+}
 
 
+
+```
+### State and Events
+
+- 2 types of state - component level, app level(pass down to components)
+
+#### Component Level
+
+```js
+import {useState} from 'react'
+
+const JobListing = ({job})=>{
+    const [showFullDescription, setShowFullDescription] = useState(false) //default value
+    let description = job.description
+    if(!showFullDescription){
+        description = description.substring(0, 90) + '...'
+    }
+    return(
+         ...html // single parent
+        {job.type}
+        <a href={`/job/${job.id}`}>
+        {description}
+        // <button onClick={setShowFullDescription(!showFullDescription)}>{showFullDescription ? 'Less' : 'More'}</button> // Cant do this as it will run the function
+        // <button onClick={()=> setShowFullDescription(!showFullDescription)}>{showFullDescription ? 'Less' : 'More'}</button> // There is a better way than this
+        <button onClick={()=> setShowFullDescription((prevState)=>!prevState)}>{showFullDescription ? 'Less' : 'More'}</button> // similar behaviour can be used in several places like hamburger menu wherever toggling of UI is required.
+    )
+}
+
+```
+
+### React Icon Package
