@@ -181,3 +181,88 @@ const App = ()=>{
 }
 export default App
 ```
+
+## Project
+
+### create components
+
+- create file src/components/Navbar.jsx
+- import Navbar from "./components/Navbar"
+- <Navbar />
+- Visulaize structure in a page as components.
+  - Navbar
+  - Hero
+  - HomeCards // Wrapper component for Card
+  - Card
+  - JobListings // Wrapper component for Listing
+  - Listing
+ 
+```jsx
+//app.jsx
+<>
+    <Navbar />
+    <Hero />
+    <HomeCards />
+    <JobListings />
+<>
+
+```
+
+### passing props in a component
+
+```jsx
+//app.jsx
+<>
+    <Navbar />
+    <Hero title="Test Title" subtitle="This is the subtitlt" />
+<>
+
+//Hero.jsx
+const Hero = (props)=>{ // destructure it ({title = 'Become a dev', subtitle="Find react job"}) adding default
+    return(
+        { props.title }
+        { props.subtitle }
+    )
+}
+
+```
+
+### wrapper component
+
+```jsx
+//app.jsx
+import HomeCards from './components/HomeCards'
+<HomeCards />
+
+// HomeCards.jsx
+import Card from './components/Card'
+
+<Card> // basically its the div with class wrapper
+    ...contains html
+</Card>
+
+<Card bg='bg-indigo-100'> // basically its the div with class wrapper
+    ...contains html
+</Card>
+
+
+//Cards.jsx
+
+const Card = ({children, bg = 'bg-gray-100'})=>{
+    return <div className = {`wrapper ${bg}`}>{children}</div>
+}
+
+```
+### Displaying job lisings
+//Actual api
+{
+    jobs:[{},{}]
+}
+
+// jobs json
+[{},{}]
+
+- Create a wrapper JobListings component and in this import the jobs json
+- 
+
+
