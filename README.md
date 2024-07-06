@@ -315,4 +315,37 @@ const JobListing = ({job})=>{
 
 ```
 
+### Prop Drilling - Sending data to parent from child component
+
+
+```jsx
+
+function Parent(){
+    const [userData, setUserData]= useState('')
+    const handleData = (data)=>{
+        setUserData(data)
+    }
+    return (
+        <>
+            <h1>Data from Child Component: {userData}</h1>
+            <Child setData={handleData}/>
+        <>
+    )
+}
+
+function Child({setData}){
+    const handleChange = (e)=>{
+        setData(e.target.value)
+    }
+    return (
+        <>
+            <input onChange={handleChange} />
+        <>
+    )
+}
+
+
+
+```
+
 ### React Icon Package
