@@ -83,7 +83,8 @@ git branch --move master main
 
 
 ## Tailwind CSS Setup
-[Install Tailwind CSS with Vite](https://tailwindcss.com/docs/guides/vite)
+- [Install Tailwind CSS with Vite](https://tailwindcss.com/docs/guides/vite)
+- [Tailwind css docs](https://tailwindcss.com/docs/utility-first)
 - npm install -D tailwindcss postcss autoprefixer
 - npx tailwindcss init -p
 
@@ -355,9 +356,56 @@ function Child({setData}){
 - import {FaMapMarker} from 'react-icons/fa'
 - <FaMapMarker />
 
-### Tailwind css
-- [Tailwind css docs](https://tailwindcss.com/docs/utility-first)
+### Creating Layout (Some pages can have some part same like Navbar)
 
+- create separate folder layouts
+- we can have multiple layout
+- MainLayout.jsx
+```jsx
+import {Outlet} from 'react-router-dom'
+// component you want on all the pages under this Layout
+import {Navbar} from '../components/Navbar' 
+const MainLayout = ()=>{
+    return (
+        <>
+            <Navbar />
+            <Outlet />
+        </>
+    )
+}
+export default MainLayout
+
+```
+
+
+### Creating pages (links)
+
+- create separate folder pages or screens
+- HomePage.jsx
+
+```jsx
+import Hero from "../components/Hero";
+import HomeCards from "../components/HomeCards";
+import JobListings from "../components/JobListings";
+import ViewAllJobs from "../components/ViewAllJobs";
+
+const HomePage = () => {
+    return (
+        <>
+            <Hero />
+            <HomeCards />
+            <JobListings isHome={true} />
+            <ViewAllJobs />
+        </>
+    );
+};
+export default HomePage;
+
+
+// Jobs Page
+
+
+```
 
 ### React router (separate package)
 
@@ -369,13 +417,114 @@ function Child({setData}){
 ```jsx
 // App.jsx
 import {Route, createBrowserRouter, createRoutesFromElements, RouterProvider} from "react-router-dom"
+import MainLayout from "./layouts/MainLayout"
+import HomePage from "./pages/HomePage"
 const router = createBrowserRouter(
-    createRoutesFromElements(<Route index element={<h1>My App</h1>} />)
+    // createRoutesFromElements(<Route index element={<h1>My App</h1>} />)
+    createRoutesFromElements(
+
+        <Route path="/" element={<MainLayout />} />
+            <Route index element={<HomePage />} />
+            <Route path='/jobs' element={<JobsPage />} />
+            <Route path='/*' element={<NotFound />} /> // Any page thats not found
+        </Route>
+    )
     // createRoutesFromElements(<Route path="/about" element={<h1>My App</h1>} />)
 )
 
 const App = () =>{
     return <RouterProvider router={router} />
 }
+
+
+// Navbar
+import { NavLink } from "react-router-dom"; // use NavLink instead of Link as link doesn't add the active class like NavLink does
+// use NavLink instead of a tag as a tag refresh the page everytime we click on the link
+
+const linkClass = ({ isActive }) =>
+        isActive
+            ? "bg-black text-white hover:bg-gray-900 hover:text-white rounded-md px-3 py-2"
+            : "text-white hover:bg-gray-900 hover:text-white rounded-md px-3 py-2";
+
+<NavLink className="flex flex-shrink-0 items-center mr-4" to="/"></NavLink>
+<NavLink to="/" className={linkClass}>Home</NavLink>
+<NavLink to="/jobs" className={linkClass}>Jobs</NavLink>
+<NavLink to="/add-job" className={linkClass}>Add Job</NavLink>
+
+```
+- we create a new page and we add that in app file.
+
+
+### Conditional Rendering
+
+```jsx
+const JobListings = ({isHome = false})=>{ // destructuring
+    const jobListings = isHome ? jobs.slice(0,3):jobs
+} 
+
+// HomePage
+<JobListings isHome={true} />
+
+```
+
+
+### json-server mock api from json file not similar to jsonPlaceholder
+
+- makes our data file as a server
+- npm i -D json-server
+- "server":"json-server --watch src/jobs.json --port 8000"
+- npm run server
+
+### Fetching data useEffect()
+
+
+```jsx
+import { useState, useEffect } from "react";
+import JobListing from "./JobListing";
+import Spinner from "./Spinner";
+
+const JobListings = ({ isHome = false }) => {
+    const [jobs, setJobs] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchJobs = async () => {
+            const apiUrl = isHome ? "/api/jobs?_limit=3" : "/api/jobs";
+            try {
+                const res = await fetch(apiUrl);
+                const data = await res.json();
+                setJobs(data);
+            } catch (error) {
+                console.log("Error fetching data", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchJobs();
+    }, []);
+
+    return (
+        <section className="bg-blue-50 px-4 py-10">
+            <div className="container-xl lg:container m-auto">
+                <h2 className="text-3xl font-bold text-indigo-500 mb-6 text-center">
+                    {isHome ? "Recent Jobs" : "Browse Jobs"}
+                </h2>
+
+                {loading ? (
+                    <Spinner loading={loading} />
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        {jobs.map((job) => (
+                            <JobListing key={job.id} job={job} />
+                        ))}
+                    </div>
+                )}
+            </div>
+        </section>
+    );
+};
+export default JobListings;
+
 
 ```
