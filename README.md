@@ -348,4 +348,34 @@ function Child({setData}){
 
 ```
 
-### React Icon Package
+### React icons
+
+- [React icons docs](https://react-icons.github.io/react-icons/icons/fa/)
+- npm i react-icons
+- import {FaMapMarker} from 'react-icons/fa'
+- <FaMapMarker />
+
+### Tailwind css
+- [Tailwind css docs](https://tailwindcss.com/docs/utility-first)
+
+
+### React router (separate package)
+
+- Remix framework is build on top of react router.
+- used to add separate pages and links between them.
+- npm i react-router-dom
+
+
+```jsx
+// App.jsx
+import {Route, createBrowserRouter, createRoutesFromElements, RouterProvider} from "react-router-dom"
+const router = createBrowserRouter(
+    createRoutesFromElements(<Route index element={<h1>My App</h1>} />)
+    // createRoutesFromElements(<Route path="/about" element={<h1>My App</h1>} />)
+)
+
+const App = () =>{
+    return <RouterProvider router={router} />
+}
+
+```
