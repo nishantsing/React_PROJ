@@ -240,16 +240,16 @@ import HomeCards from './components/HomeCards'
 import Card from './components/Card'
 
 <Card> // basically its the div with class wrapper
-    ...contains html
+    ...contains html // this acts as children in card component
 </Card>
 
 <Card bg='bg-indigo-100'> // basically its the div with class wrapper
-    ...contains html
+    ...contains html // this acts as children in card component
 </Card>
 
 
 //Cards.jsx
-
+// children(whatever we wrap) as a prop -  refer to the content passed inside the Card component in the HomeCard component - 
 const Card = ({children, bg = 'bg-gray-100'})=>{
     return <div className = {`wrapper ${bg}`}>{children}</div>
 }
