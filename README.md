@@ -426,6 +426,7 @@ const router = createBrowserRouter(
         <Route path="/" element={<MainLayout />} />
             <Route index element={<HomePage />} />
             <Route path='/jobs' element={<JobsPage />} />
+            <Route path='/jobs/:id' element={<JobPage />} />
             <Route path='/*' element={<NotFound />} /> // Any page thats not found
         </Route>
     )
@@ -451,6 +452,9 @@ const linkClass = ({ isActive }) =>
 <NavLink to="/jobs" className={linkClass}>Jobs</NavLink>
 <NavLink to="/add-job" className={linkClass}>Add Job</NavLink>
 
+// Jobs Listing component
+<Link to={`/jobs/${job.id}`} className="h-[36px] bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-lg text-center text-sm">Read More
+</Link>
 ```
 - we create a new page and we add that in app file.
 
@@ -472,11 +476,70 @@ const JobListings = ({isHome = false})=>{ // destructuring
 
 - makes our data file as a server
 - npm i -D json-server
-- "server":"json-server --watch src/jobs.json --port 8000"
+- "server":"json-server --watch src/jobs.json --port 8000" // on this we are running json server and serving our api
 - npm run server
 
-### Fetching data useEffect()
+### Using spinner
+- npm i react-spinners
 
+<!-- Spinner component -->
+```jsx
+import ClipLoader from "react-spinners/ClipLoader";
+
+const override = {
+    display: "block",
+    margin: "100px auto",
+};
+
+const Spinner = ({ loading }) => {
+    return (
+        <ClipLoader
+            color="#4338ca"
+            loading={loading}
+            cssOverride={override}
+            size={150}
+        />
+    );
+};
+export default Spinner;
+
+```
+
+### Proxying
+- instead using http://localhost:8000
+- we can create a proxy to avoid this
+- If app is created using npm create-react-app we do it in package.json
+- using vite we create it in vite.config
+
+```js
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+
+// https://vitejs.dev/config/
+export default defineConfig({
+    plugins: [react()],
+    server: {
+        port: 3000,
+        proxy:{
+            '/api':{ //if you see a route prefixed with /api we set the below target
+                target:'http://localhost:8000',
+                changeOrigin:true,
+                rewrite:(path)=>path.replace(/^\/api/,""), // to remove /api from route
+            }
+        }
+    },
+});
+
+```
+
+### Fetching data useEffect() -fetch on render, as we are rendering there is a side effect of fetching the data.
+
+- react suspense can also be used it renders while fetching, skelton can be used.
+- react query, swr also can be used, that makes data fetching a little easier
+- useHook also can be used with react 19.
+- but we are using useEffect
+
+- component loads it has a side effect where we fetch the data using the id and then we are setting it to the state.
 
 ```jsx
 import { useState, useEffect } from "react";
@@ -487,9 +550,9 @@ const JobListings = ({ isHome = false }) => {
     const [jobs, setJobs] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
+    useEffect(() => { // we cannot create this fn as async so we need to create one inside
         const fetchJobs = async () => {
-            const apiUrl = isHome ? "/api/jobs?_limit=3" : "/api/jobs";
+            const apiUrl = isHome ? "/api/jobs?_limit=3" : "/api/jobs"; //http://localhost:8000/jobs
             try {
                 const res = await fetch(apiUrl);
                 const data = await res.json();
@@ -502,7 +565,7 @@ const JobListings = ({ isHome = false }) => {
         };
 
         fetchJobs();
-    }, []);
+    }, []); // dependency array - we can add variable in that, which when changed will trigger this hook
 
     return (
         <section className="bg-blue-50 px-4 py-10">
@@ -528,3 +591,298 @@ export default JobListings;
 
 
 ```
+
+### Extracting id from the passed route
+
+
+
+```jsx
+import {userParams} from 'react-router-dom'
+
+const { id } = useParams()
+```
+
+### Data Loaders(react router)
+
+- component loads it has a side effect where we fetch the data using the id and then we are setting it to the state. - using useEffect but there is another way using data loaders.
+- we can also export the data to other components.
+
+
+```jsx
+// JobPage
+
+import { useParams, useLoaderData, useNavigate } from "react-router-dom";
+
+
+
+const JobPage = () => {
+    const job = useLoaderData(); // it is a hook from react router dom -  this is used to access the jobLoader data
+    return(
+
+    )
+}
+
+const jobLoader = async ({ params }) => { // used in jobpage to show jobs and edit
+    const res = await fetch(`/api/jobs/${params.id}`);
+    const data = await res.json();
+    return data;
+};
+
+export { JobPage as default, jobLoader}
+
+//app.jsx
+
+import JobPage, { jobLoader } from "./pages/JobPage";
+// ...inside main layout Route
+<Route path="/edit-job/:id" element={<EditJobPage updateJobSubmit={updateJob} />} loader={jobLoader}/>
+<Route path="/jobs/:id" element={<JobPage deleteJob={deleteJob} />} loader={jobLoader} />
+
+```
+
+### Form in jsx
+
+- you can use formick, ref
+- common way is to add a piece of state for every field in your form
+- class - className
+- for - htmlFor
+
+
+```jsx
+import { useState } from 'react'
+
+
+const AddJobPage = ({ addJobSubmit }) => {
+// you can have a single object in your state and have all the fields in that object
+const [title, setTitle]= useState(''); // state item for each field
+const [type, setType] = useState("Full-Time");
+const [location, setLocation] = useState("");
+
+
+const submitForm = (e)=>{
+    e.preventDefault()
+    const newJob = {
+            title,
+            type,
+            location,
+            description,
+            salary,
+            company: {
+                name: companyName,
+                description: companyDescription,
+                contactEmail,
+                contactPhone,
+            },
+        };
+
+        addJobSubmit(newJob);
+
+        toast.success("Job Added Successfully");
+
+        return navigate("/jobs");
+}
+
+return (
+    <>
+        // <form action> - react 19
+        <form onSubmite={submitForm}> // we can create an arrow fn here or pass the name of the function
+
+        // value and onChange are imp
+        <input type="text" id="title" name="title" className="border rounded w-full py-2 px-3 mb-2" placeholder="eg. Beautiful Apartment In Miami" required value={title} onChange={(e) => setTitle(e.target.value)} />
+        <select id="type" name="type" className="border rounded w-full py-2 px-3" required value={type} onChange={(e) => setType(e.target.value)} >
+        <input type="text" id="location" name="location" className="border rounded w-full py-2 px-3 mb-2" placeholder="Company Location" required value={location} onChange={(e) => setLocation(e.target.value)} />
+    </>
+)}
+```
+
+- multiple cursor case preserve vscode extension
+
+### Using toastify
+
+- npm i react-toastify
+
+
+```jsx
+import { Outlet } from "react-router-dom";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import Navbar from "../components/Navbar";
+
+const MainLayout = () => {
+    return (
+        <>
+            <Navbar />
+            <Outlet />
+            <ToastContainer />
+        </>
+    );
+};
+export default MainLayout;
+```
+
+### Making requests to backend, you can use redux or context-api
+
+- passing fn as a prop
+
+```jsx
+import {
+    Route,
+    createBrowserRouter,
+    createRoutesFromElements,
+    RouterProvider,
+} from "react-router-dom";
+import MainLayout from "./layouts/MainLayout";
+import HomePage from "./pages/HomePage";
+import JobsPage from "./pages/JobsPage";
+import NotFoundPage from "./pages/NotFoundPage";
+import JobPage, { jobLoader } from "./pages/JobPage";
+import AddJobPage from "./pages/AddJobPage";
+import EditJobPage from "./pages/EditJobPage";
+
+const App = () => {
+    // Add New Job
+    const addJob = async (newJob) => {
+        const res = await fetch("/api/jobs", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(newJob),
+        });
+        return;
+    };
+
+    // Delete Job
+    const deleteJob = async (id) => {
+        const res = await fetch(`/api/jobs/${id}`, {
+            method: "DELETE",
+        });
+        return;
+    };
+
+    // Update Job
+    const updateJob = async (job) => {
+        const res = await fetch(`/api/jobs/${job.id}`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(job),
+        });
+        return;
+    };
+
+    const router = createBrowserRouter(
+        createRoutesFromElements(
+            <Route path="/" element={<MainLayout />}>
+                <Route index element={<HomePage />} />
+                <Route path="/jobs" element={<JobsPage />} />
+                <Route
+                    path="/add-job"
+                    element={<AddJobPage addJobSubmit={addJob} />} // passing fn as prop
+                />
+                <Route
+                    path="/edit-job/:id"
+                    element={<EditJobPage updateJobSubmit={updateJob} />}
+                    loader={jobLoader}
+                />
+                <Route
+                    path="/jobs/:id"
+                    element={<JobPage deleteJob={deleteJob} />}
+                    loader={jobLoader}
+                />
+                <Route path="*" element={<NotFoundPage />} />
+            </Route>
+        )
+    );
+
+    return <RouterProvider router={router} />;
+};
+export default App;
+
+
+// AddJobPage
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify"; // using toastify
+
+const AddJobPage = ({ addJobSubmit }) => {
+    const navigate = useNavigate(); // iinitializing 
+    const newJob = {
+            title,
+            type,
+            location,
+            description,
+            salary,
+            company: {
+                name: companyName,
+                description: companyDescription,
+                contactEmail,
+                contactPhone,
+            },
+        };
+
+        addJobSubmit(newJob);
+        toast.success("Job Added Successfully"); // toastify toast.error for error
+
+        return navigate("/jobs"); // redirecting
+}
+// EditJobPage
+const EditJobPage = ({ updateJobSubmit }) => {
+    const updatedJob = {
+            id,
+            title,
+            type,
+            location,
+            description,
+            salary,
+            company: {
+                name: companyName,
+                description: companyDescription,
+                contactEmail,
+                contactPhone,
+            },
+        };
+
+        updateJobSubmit(updatedJob);
+}
+// JobPage
+import { useParams, useLoaderData, useNavigate } from "react-router-dom";
+import { FaArrowLeft, FaMapMarker } from "react-icons/fa";
+import { Link } from "react-router-dom";
+import { toast } from "react-toastify";
+const JobPage = ({ deleteJob }) => {
+    const navigate = useNavigate();
+    const { id } = useParams();
+    const job = useLoaderData();
+
+    const onDeleteClick = (jobId) => {
+        const confirm = window.confirm(
+            "Are you sure you want to delete this listing?"
+        );
+
+        if (!confirm) return;
+
+        deleteJob(jobId);
+
+        toast.success("Job deleted successfully");
+
+        navigate("/jobs");
+    };
+
+    return (
+        <>
+            <Link to={`/edit-job/${job.id}`} className="bg-indigo-500 hover:bg-indigo-600 text-white text-center font-bold py-2 px-4 rounded-full w-full focus:outline-none focus:shadow-outline mt-4 block">Edit Job</Link>
+            <button onClick={() => onDeleteClick(job.id)} className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-full w-full focus:outline-none focus:shadow-outline mt-4 block">Delete Job</button>
+        </>
+    )
+}
+
+
+
+
+```
+
+
+
+### Building static asset for production
+- npm run build -> creates dist thats production build
+- npm run preview -> runs production build
