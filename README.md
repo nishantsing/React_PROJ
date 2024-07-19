@@ -117,6 +117,8 @@ export default {
 @tailwind utilities;
 ```
 
+- tailwind plugin (npm i -D prettier prettier-plugin-tailwindcss)
+
 ## JSX
 
 - every react component is going to return JSX.
