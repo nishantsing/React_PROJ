@@ -118,6 +118,12 @@ export default {
 ```
 
 - tailwind plugin (npm i -D prettier prettier-plugin-tailwindcss)
+- .prettierrc
+```js
+{
+    "plugins":[prettier-plugin-tailwindcss]
+}
+```
 
 ## JSX
 
