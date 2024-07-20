@@ -3,9 +3,11 @@
 [React Docs(https://react.dev/)
 
 - [React Crash Course 2024 - Traversy Media](https://www.youtube.com/watch?v=LDB4uaJ87e0&list=WL&index=13)
+- [Vue Crash Course 2024 - Traversy Media](https://youtu.be/VeNfHj6MhgA)
 - [React 18 Tutorial and Projects Course - 2024 Edition - John smilga](https://www.udemy.com/course/react-tutorial-and-projects-course/?couponCode=LETSLEARNNOWPP)
 - [MERN 2024 Edition - MongoDB, Express, React and NodeJS - John smilga](https://www.udemy.com/course/mern-stack-course-mongodb-express-react-and-nodejs/?couponCode=OF52424)
 - [Mastering Next.js - Build Airbnb Clone from Scratch (2024) - John smilga](https://www.udemy.com/course/mastering-nextjsbuild-an-airbnb-clone-from-scratch-2024/?couponCode=OF52424)
+
 
 
 - npx create-react-app .
